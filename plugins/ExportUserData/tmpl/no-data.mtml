@@ -1,0 +1,20 @@
+<mt:setvarblock name="page_title">Export User Data: Nothing to Export</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="export">
+    <p>No users were found to match your filter requirements.</p>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                class="primary-button cancel"
+                accesskey="x"
+                title="Close (x)">Close</button>
+        </div>
+    </div>
+</form>
+
+<mt:include name="dialog/footer.tmpl">
