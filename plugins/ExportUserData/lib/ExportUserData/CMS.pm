@@ -264,6 +264,10 @@ sub export {
                     foreach $assoc (@assoc) {
                         $role = MT->model('role')->load($assoc->role_id);
                         $blog = MT->model('blog')->load($assoc->blog_id);
+                        # Give up working with this association if the role
+                        # or blog was not loaded successfully, and just go
+                        # to the next association in the array.
+                        next unless $role && $blog;
                         push @roles, $role->name.': '.$blog->name.' ('.$blog->id.')';
                     }
                     $val = join(', ', @roles);
