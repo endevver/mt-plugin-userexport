@@ -1,6 +1,6 @@
 <mt:setvarblock name="html_head" append="1">
     <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-    <script type="text/javascript" src="<mt:StaticWebPath>plugins/ExportUserData/jquery.tablednd_0_5.js"></script>
+    <script type="text/javascript" src="<mt:PluginStaticWebPath component="exportuserdata">jquery.tablednd_0_5.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             // Initialise the table
@@ -26,15 +26,15 @@
     </script>
     <style type="text/css">
         #fields {
-            height: 350px;
+            height: 345px;
             overflow: auto;
+            border: 1px solid #cddee7;
         }
         table#user-fields {
-            width: 595px;
-            border: 1px solid #cddee7;
+            width: 590px;
             background: #fff;
         }
-        tr { background: url(<mt:StaticWebPath>plugins/ExportUserData/drag.png) 11px 6px no-repeat;}
+        tr { background: url(<mt:PluginStaticWebPath component="exportuserdata">drag.png) 11px 6px no-repeat;}
         th { font-weight: bold; }
         th,td {
             padding: 4px 8px;

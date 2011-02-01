@@ -5,6 +5,7 @@ The Export User Data plugin for Movable Type allows administrators to export all
 # Prerequisities
 
 * Movable Type 4.x.
+* Config Assistant 2.x
 
 # Installation
 
