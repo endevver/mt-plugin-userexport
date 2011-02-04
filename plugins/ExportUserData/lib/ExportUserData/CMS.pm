@@ -62,11 +62,25 @@ sub sort {
     my @fields = MT->model('field')->load({ obj_type => 'author', });
     my @cf_loop;
     foreach my $field (@fields) {
-        push @cf_loop, { basename => $field->basename,
-                         name     => $field->name,
-                         description => $field->description,
-                       };
+        push @cf_loop, { 
+            basename    => $field->basename,
+            name        => $field->name,
+            description => $field->description,
+        };
     }
+
+    # Include the Download Genie stats options, if DG is installed.
+    if (my $dg = MT->component('downloadgenie')) {
+        push @cf_loop, {
+            basename => 'dg_total',
+            name     => 'Total number of files downloaded',
+        };
+        push @cf_loop, {
+            basename => 'dg_files',
+            name     => 'Downloaded file name, date and time',
+        };
+    }
+    
     $param->{cf_loop} = \@cf_loop;
 
     my $tmpl = $plugin->load_tmpl('sort-fields.mtml');
@@ -205,9 +219,54 @@ sub export {
                 my ($val, $basename, $ts, $assoc, @roles, $role, $perm, @blogs, $blog);
 
                 if ($field =~ /^customfield_(.*?)$/) {
-                    #MT::log("This is a custom field: $field");
+                    # The Download Genie total number of downloads option.
+                    if ($field =~ /dg_total/) {
+                        # Be sure we've got all the blog IDs we need.
+                        my @dg_blog_ids = _get_blog_ids(@blog_ids);
+
+                        # Now that the blog ID selection has been worked out,
+                        # we need to count the results. This is the total
+                        # number of downloads from this user, so just return
+                        # the count.
+                        $val = MT->model('dg_stats')->count(
+                            { created_by => $author->id,
+                              blog_id    => \@dg_blog_ids, },
+                        );
+                    }
+                    # The Download Genie files, date, time option.
+                    elsif ($field =~ /dg_files/) {
+                        # Be sure we've got all the blog IDs we need.
+                        my @dg_blog_ids = _get_blog_ids(@blog_ids);
+
+                        my @asset_stats;
+                        
+                        my $iter = MT->model('dg_stats')->load_iter(
+                            { created_by => $author->id,
+                              blog_id    => \@dg_blog_ids, },
+                        );
+                        while (my $dg_stats = $iter->()) {
+                            my $asset = MT->model('asset')->load(
+                                $dg_stats->asset_id
+                            );
+                            my $ts = format_ts( 
+                                MT::App::CMS::LISTING_TIMESTAMP_FORMAT(), 
+                                $dg_stats->created_on, undef,
+                                $app->user ? $app->user->preferred_language : undef
+                            );
+                            
+                            # Formatted as "filename.ext: 2011-02-03 12:34:56"
+                            push @asset_stats, 
+                                $asset->label . ': ' . $ts;
+                        }
+
+                        @asset_stats = sort {lc($a) cmp lc($b)} @asset_stats;
+                        $val = join("\n",@asset_stats);
+                    }
+                    # This is a custom field.
+                    else {
                         $basename = 'field.' . $1;
                         $val = $author->$basename;
+                    }
                 }
                 elsif ($field eq 'author_userpic_asset_id') {
                     # This is the userpic. Check that there is an ID in the userpic_asset_id field
@@ -277,6 +336,7 @@ sub export {
                     # so don't need any special handling to get their results.
                     $val = $author->$1;
                 }
+                
                 push @detail, $val;
             }
             $data = _csv_row(@detail);
@@ -311,6 +371,24 @@ sub _csv_row {
     if ($status) {
         return $csv->string();
     }
+}
+
+sub _get_blog_ids {
+    my @blog_ids = @_;
+    # If individual blogs were selected, we can just use
+    # the @blog_ids array because it's already properly
+    # populated. But if "All" blogs were selected, we
+    # need to laod all blogs so that results will be
+    # properly tallied.
+    
+    unless (@blog_ids) {
+        my @blogs = MT->model('blog')->load();
+        foreach my $blog (@blogs) {
+            push @blog_ids, $blog->id;
+        }
+    }
+
+    return @blog_ids;
 }
 
 1;
