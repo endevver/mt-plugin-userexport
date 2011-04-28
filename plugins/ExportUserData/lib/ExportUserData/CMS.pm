@@ -43,14 +43,14 @@ sub sort {
 
     # If "all" was selected from the blog or role selector, trash any other
     # option that may have been selected.
-    if (@blogs[0] == 'all') {
+    if ($blogs[0] eq 'all') {
         $param->{blogs} = '';
     }
     else {
         $param->{blogs} = join(',', @blogs);
     }
 
-    if (@roles[0] == 'all') {
+    if ($roles[0] eq 'all') {
         $param->{roles} = '';
     }
     else {
