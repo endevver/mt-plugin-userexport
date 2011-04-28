@@ -18,7 +18,8 @@ sub start {
     # First, the user can create a simple filter to whittle down the results.
     # The blog and status filters don't need any help to be created; only the Roles do.
     use MT::Role;
-    my @all_roles = MT->model('role')->load( undef, { sort => 'name' });
+    my @all_roles = MT->model('role')->load( undef, { sort => 'name' })
+        or die 'No roles could be found.';
     my @role_loop;
     foreach my $r (@all_roles) {
         push @role_loop, { role_id => $r->id, role_name => $r->name };
@@ -59,7 +60,8 @@ sub sort {
     
     # We need to create the custom field pieces ourself, because MT's custom
     # field tags don't make the basename available.
-    my @fields = MT->model('field')->load({ obj_type => 'author', });
+    my @fields = MT->model('field')->load({ obj_type => 'author', })
+        or die 'No authors could be found.';
     my @cf_loop;
     foreach my $field (@fields) {
         push @cf_loop, { 
@@ -70,7 +72,7 @@ sub sort {
     }
 
     # Include the Download Genie stats options, if DG is installed.
-    if (my $dg = MT->component('downloadgenie')) {
+    if ( MT->component('downloadgenie') ) {
         push @cf_loop, {
             basename => 'dg_total',
             name     => 'Total number of files downloaded',
@@ -134,10 +136,11 @@ sub export {
     if ($status) {
         $terms->{status} = $status;
     }
-    
+
     my $start_header; # A boolean to know whether or not to send the "start download" header.
 
-    my $iter = MT->model('author')->load_iter($terms);
+    my $iter = MT->model('author')->load_iter($terms)
+        or die 'No authors could be found that meet your search terms.';
     while ( my $author = $iter->() ) {
         my $data; # Used later, for the exported data
         # Associations are used for both the role and blog options. No need to
@@ -145,7 +148,7 @@ sub export {
         my @assoc = MT->model('association')->load({ author_id => $author->id, });
 
         my ($author_filter, $role_filter, $blog_filter);
-        
+
         # There are no MT::Association records if this is a 3rd-party
         # authenticated or anonymous commenter. But, we want to export them, too.
         if ( $q->param('authmethod') eq '1' ) {
@@ -184,7 +187,7 @@ sub export {
             else { # "All" roles were selected, so the filter is true!
                 $role_filter = 1;
             }
-            
+
             # If specific blogs were selected, compare them against this author's perms.
             if (@blog_ids) { # @blog_ids is true only if individual blogs were selected (not "all")
                 my $blogid = $assoc->blog_id;
@@ -212,6 +215,8 @@ sub export {
             }
         }
 
+        # The current author meets all of the tests, so prepare their data
+        # to be exported.
         my ($field, @detail);
         if ($author_filter && $role_filter && $blog_filter) {
             foreach $field (@fields) {
@@ -238,27 +243,32 @@ sub export {
                         # Be sure we've got all the blog IDs we need.
                         my @dg_blog_ids = _get_blog_ids(@blog_ids);
 
+                        # Load the Download Genie stats and format the data.
                         my @asset_stats;
-                        
+
                         my $iter = MT->model('dg_stats')->load_iter(
                             { created_by => $author->id,
                               blog_id    => \@dg_blog_ids, },
                         );
                         while (my $dg_stats = $iter->()) {
+                            # Try to load the asset in the DG stats, but just
+                            # move on if it can't be found.
                             my $asset = MT->model('asset')->load(
-                                $dg_stats->asset_id
-                            );
+                                $dg_stats->asset_id )
+                                    or next;
+
                             my $ts = format_ts( 
                                 MT::App::CMS::LISTING_TIMESTAMP_FORMAT(), 
                                 $dg_stats->created_on, undef,
                                 $app->user ? $app->user->preferred_language : undef
                             );
-                            
+
                             # Formatted as "filename.ext: 2011-02-03 12:34:56"
                             push @asset_stats, 
                                 $asset->label . ': ' . $ts;
                         }
 
+                        # Sort the rows of file name/date alphabetically
                         @asset_stats = sort {lc($a) cmp lc($b)} @asset_stats;
                         $val = join("\n",@asset_stats);
                     }
@@ -272,7 +282,8 @@ sub export {
                     # This is the userpic. Check that there is an ID in the userpic_asset_id field
                     # for this user before trying to grab the asset.
                     if ($author->userpic_asset_id) {
-                        my $asset = MT->model('asset')->load( $author->userpic_asset_id );
+                        my $asset = MT->model('asset')->load( $author->userpic_asset_id )
+                            or next;
                         # Just return the userpic URL.
                         $val = $asset->url;
                     }
@@ -336,7 +347,7 @@ sub export {
                     # so don't need any special handling to get their results.
                     $val = $author->$1;
                 }
-                
+
                 push @detail, $val;
             }
             $data = _csv_row(@detail);
