@@ -10,7 +10,17 @@
         select.multiple {
             height: 90px;
         }
+        select.full-height{
+            height: 280px;
+        }
     </style>
+    <script type="text/javascript" src="<mt:StaticWebPath>/jquery/jquery.js"></script>
+    <script type="text/javascript">
+    function turnPage() {
+        $('#page-1').hide();
+        $('#page-2').show();
+    }
+    </script>
 </mt:setvarblock>
 
 <mt:setvarblock name="page_title">Export User Data: Filter</mt:setvarblock>
@@ -22,57 +32,99 @@
 
     <p>Use the fields below to filter the user data you want to export.</p>
 
-    <div class="data">
-        <p>Select the user&rsquo;s status.</p>
-        <select name="status">
-            <option value="1" selected="selected">Enabled</option>
-            <option value="2">Disabled</option>
-            <option value="3">Pending</option>
-            <option value="">All</option>
-        </select>
-    </div>
-
-    <div class="data">
-        <p>Select the user&rsquo;s role.</p>
-        <select name="roles" multiple="multiple" class="multiple">
-            <option value="all" selected="selected">All</option>
-        <mt:Loop name="role_loop">
-            <option value="<mt:Var name="role_id">"><mt:Var name="role_name"></option>
-        </mt:Loop>
-        </select>
-    </div>
-
-    <div class="data">
-        <p>Select the blog(s) to export from.</p>
-        <select name="blogs" multiple="multiple" class="multiple">
-            <option value="all" selected="selected">All</option>
-        <mt:Blogs>
-            <option value="<mt:BlogID>"><mt:BlogName></option>
-        </mt:Blogs>
-        </select>
-    </div>
-
-    <div class="data">
-        <p><input type="checkbox" name="authmethod" id="authmethod" value="1" style="display: block; float: left; margin: 0 5px 10px 0;" /> <label for="authmethod">Include users who authenticated with MT native in addition to other methods, such as OpenID, Typepad, and Facebook.</label></p>
-    </div>
-
-
-
-    <div class="actions-bar">
-        <div class="actions-bar-inner pkg actions">
-            <button
-                onclick="document.forms['filter'].submit();"
-                type="button"
-                accesskey="s"
-                class="primary-button close">Select Fields</button>
-            <button
-                onclick="closeDialog(); return false"
-                type="submit"
-                class="cancel"
-                accesskey="x"
-                title="Cancel (x)">Cancel</button>
+    <div id="page-1">
+        <div class="data">
+            <p>Select the user&rsquo;s status.</p>
+            <select name="status">
+                <option value="1" selected="selected">Enabled</option>
+                <option value="2">Disabled</option>
+                <option value="3">Pending</option>
+                <option value="">All</option>
+            </select>
         </div>
-    </div>
+
+        <div class="data">
+            <p>Select the user&rsquo;s role.</p>
+            <select name="roles" multiple="multiple" class="multiple">
+                <option value="all" selected="selected">All</option>
+            <mt:Loop name="role_loop">
+                <option value="<mt:Var name="role_id">"><mt:Var name="role_name"></option>
+            </mt:Loop>
+            </select>
+        </div>
+
+        <div class="data">
+            <p>Select the blog(s) to export from.</p>
+            <select name="blogs" multiple="multiple" class="multiple">
+                <option value="all" selected="selected">All</option>
+            <mt:Blogs>
+                <option value="<mt:BlogID>"><mt:BlogName></option>
+            </mt:Blogs>
+            </select>
+        </div>
+
+        <div class="data">
+            <p><input type="checkbox" name="authmethod" id="authmethod" value="1" style="display: block; float: left; margin: 0 5px 10px 0;" /> <label for="authmethod">Include users who authenticated with MT native in addition to other methods, such as OpenID, Typepad, and Facebook.</label></p>
+        </div>
+        
+        <div class="actions-bar">
+            <div class="actions-bar-inner pkg actions">
+                <button
+                    onclick="turnPage()"
+                    type="button"
+                    accesskey="s"
+                    class="primary-button close">Filter Custom Fields</button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    class="cancel"
+                    accesskey="x"
+                    title="Cancel (x)">Cancel</button>
+            </div>
+        </div>
+    </div><!-- End of #page-1 -->
+
+    <div id="page-2" style="display: none;">
+        <div class="data">
+            <p>
+                Select one or more custom fields below to filter users on.
+            </p>
+            <select name="author_cf" multiple="multiple" class="full-height">
+            <mt:AuthorCustomFields>
+                <option value="<mt:CustomFieldBasename>"><mt:CustomFieldName></option>
+            </mt:AuthorCustomFields>
+            </select>
+        </div>
+        
+        <div class="data">
+            <input type="radio" name="author_cf_filter" id="author_cf_filter_included" value="include" checked="checked" />
+                <label for="author_cf_filter_included">
+                    Users with matching Custom Field data for the selected field(s) should be exported.
+                </label><br />
+            <input type="radio" name="author_cf_filter" id="author_cf_filter_excluded" value="exclude" />
+                <label for="author_cf_filter_excluded">
+                    Users with matching Custom Field data for the selected field(s) should <em>not</em> be exported.
+                </label>
+        </div>
+
+        <div class="actions-bar">
+            <div class="actions-bar-inner pkg actions">
+                <button
+                    onclick="document.forms['filter'].submit();"
+                    type="button"
+                    accesskey="s"
+                    class="primary-button close">Select Fields</button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    class="cancel"
+                    accesskey="x"
+                    title="Cancel (x)">Cancel</button>
+            </div>
+        </div>
+    </div><!-- End of #page-2 -->
+
+
 </form>
 
 <mt:include name="dialog/footer.tmpl">

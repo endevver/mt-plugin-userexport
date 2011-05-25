@@ -39,6 +39,8 @@ sub sort {
     # Grab the values from the filter form so that we have them ready to use.
     my @blogs = $q->param('blogs');
     my @roles = $q->param('roles');
+    my @author_cfs = $q->param('author_cf');
+    $param->{author_cf_filter} = $q->param('author_cf_filter');
     $param->{authmethod} = $q->param('authmethod');
     $param->{status} = $q->param('status');
 
@@ -57,6 +59,9 @@ sub sort {
     else {
         $param->{roles} = join(',', @roles);
     }
+    
+    # Grab the author custom fields that were selected for the filter.
+    $param->{author_cfs} = join(',', @author_cfs);
     
     # We need to create the custom field pieces ourself, because MT's custom
     # field tags don't make the basename available.
@@ -96,10 +101,12 @@ sub export {
     my $param = {};
 
     # Collect all of the submitted values.
-    my @blog_ids = split( /,/, $q->param('blogs') );
-    my @role_ids    = split( /,/, $q->param('roles') );
-    my $status   = $q->param('status');
-    my @selected_fields = $q->param('field');
+    my @blog_ids   = split( /,/, $q->param('blogs') );
+    my @role_ids   = split( /,/, $q->param('roles') );
+    my $status     = $q->param('status');
+    my @author_cfs = split( /,/, $q->param('author_cfs') );
+    my $author_cf_filter = $q->param('author_cf_filter');
+    my @selected_fields  = $q->param('field');
 
     # Fields are collected, but they are out of order. use the field-order to
     # resort them. But first, clean up field-order.
@@ -141,7 +148,49 @@ sub export {
 
     my $iter = MT->model('author')->load_iter($terms)
         or die 'No authors could be found that meet your search terms.';
-    while ( my $author = $iter->() ) {
+    AUTHOR:while ( my $author = $iter->() ) {
+        
+        # Use the author custom field filter to check this author. If they 
+        # have no data saved to the specified field then just move on to the 
+        # next author.
+        foreach my $author_cf_basename (@author_cfs) {
+            my $cf = 'field.' . $author_cf_basename;
+
+            # Load the custom field definiton so that we can use the field
+            # type to determine if the field is "empty."
+            my $author_cf = MT->model('field')->load({
+                obj_type => 'author',
+                basename => $author_cf_basename,
+            });
+
+            if ($author_cf->type eq 'checkbox') {
+                if ($author_cf_filter eq 'exclude') {
+                    # If this field is checked we want to exclude this user 
+                    # from the export.
+                    next AUTHOR if ($author->$cf eq '1');
+                }
+                else {
+                    # If this field is checked we want to include this user
+                    # in the export.
+                    next AUTHOR if ($author->$cf ne '1');
+                }
+            }
+            
+            # This is not a checkbox field.
+            else {
+                if ($author_cf_filter eq 'exclude') {
+                    # If this field has a value we want to exclude this user 
+                    # from the export.
+                    next AUTHOR if ($author->$cf ne '');
+                }
+                else {
+                    # If this field has no value we want to include this user
+                    # in the export.
+                    next AUTHOR if ($author->$cf eq '');
+                }
+            }
+        }
+
         my $data; # Used later, for the exported data
         # Associations are used for both the role and blog options. No need to
         # look them up for each request, so just do it once here.

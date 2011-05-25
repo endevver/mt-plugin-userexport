@@ -81,11 +81,14 @@
 </div>
 
 <form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="sort">
-    <input type="hidden" name="__mode"     value="eud_export" />
-    <input type="hidden" name="status"     value="<mt:Var name="status">" />
-    <input type="hidden" name="blogs"      value="<mt:Var name="blogs">" />
-    <input type="hidden" name="roles"      value="<mt:Var name="roles">" />
-    <input type="hidden" name="authmethod" value="<mt:Var name="authmethod">" />
+    <input type="hidden" name="__mode"      value="eud_export" />
+    <input type="hidden" name="status"      value="<mt:Var name="status">" />
+    <input type="hidden" name="blogs"       value="<mt:Var name="blogs">" />
+    <input type="hidden" name="roles"       value="<mt:Var name="roles">" />
+    <input type="hidden" name="authmethod"  value="<mt:Var name="authmethod">" />
+    <input type="hidden" name="author_cfs"  value="<mt:Var name="author_cfs">" />
+    <input type="hidden" name="author_cf_filter" 
+                                            value="<mt:Var name="author_cf_filter">" />
     <input type="hidden" name="field-order" id="field-order" value="" />
 
     <p>Select the fields to be exported by enabling the "export" checkbox. Drag to reorder fields.

@@ -24,6 +24,17 @@ On the **Filter** screen you can home-in on the users you want, then click the S
 * Select the blog(s) to export from. If your Movable Type install runs multiple domains, being able to export user data for specific blogs is important.
 * By default, only users who have used MT authentication will be exported, because those are the users with the most useful data. (Custom fields, for example, can only be filled-in by MT-authenticated users.) If you want to export the data from users who have authenticated through other methods such as TypePad or Facebook, in addition to those authenticated through MT, check this checkbox.
 
+The Filter screen continues, where you can filter based on author Custom
+Fields. Select one or more custom fields to filter on, then select how these
+fields should be used:
+
+* Users with matching custom field data for the selected fields should be
+  exported. That is, if a user profile contains a value for the selected
+  field, that user will be exported.
+* Users with matching custom field data for the selected fields should *not*
+  be exported. That is, if a user profile contains a value for the selected
+  field, that user will *not* be exported.
+
 On the **Fields** screen you will find a table of author profile fields, including any custom fields that may be defined. Place checkmarks next to the fields that you want to include in your export data. Click and drag fields to re-arrange their order. Note that the User ID field will always be exported, and can not be reordered. Click the Export button to continue; depending upon the size of the dataset, this may take a few moments.
 
 If you are using the [Download Genie](https://github.com/endevver/mt-plugin-download-genie) plugin, and if statistics recording is enabled within Download Genie, you have some additional options: the total number of files downloaded and the downloaded file name, date, and time can also be exported. Note that exporting the downloaded file name, date and time can result in a lot of additional data being exported.
