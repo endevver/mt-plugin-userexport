@@ -4,24 +4,37 @@
     <script type="text/javascript">
         $(document).ready(function() {
             // Initialise the table
-            $("#user-fields").tableDnD({
+            $("#user-fields tbody").tableDnD({
                 serializeRegexp: /^.*$/,
                 onDragClass: "drag",
             });
+
+            // Sort fields based on the saved data
+            sortBySavedOrder();
+
             // Add the stripe effect
             $("#user-fields tr:odd").addClass('odd');
         });
+
         function prep() {
             // Display the status indicator
             $('#status').css('display', 'block');
             // tableDnDSerialize() will create a list of the order of the drag-dropped fields
-            $('#field-order').val( $('#user-fields').tableDnDSerialize() );
+            $('#field-order').val( $('#user-fields tbody').tableDnDSerialize() );
             document.forms['sort'].submit();
             // Disable all of the buttons and checkbox fields.
             $('button').attr('disabled', 'disabled');
             $(':input').attr('disabled', 'disabled');
             // Close this dialog 5 secs later, because it's not needed anymore.
             setTimeout(function(){ closeDialog(); }, 5000 );
+        }
+
+        // Resort the table cells so that the selected and ordered fields 
+        // appear first.
+        function sortBySavedOrder() {
+        <mt:Loop name="saved_fields" sort_by="reverse">
+            $('tr#<mt:Var name="saved">').prependTo('table#user-fields tbody');
+        </mt:Loop>
         }
     </script>
     <style type="text/css">
@@ -94,62 +107,84 @@
     <p>Select the fields to be exported by enabling the "export" checkbox. Drag to reorder fields.
     <div id="fields">
         <table id="user-fields">
-            <tr class="nodrag nodrop">
-                <th class="select">Export</th>
-                <th>Field name</th>
-            </tr>
-            <tr id="author_id" class="nodrag nodrop">
-                <td class="select"><input type="checkbox" name="field" id="field_author_id" value="author_id" checked="checked" /></td>
-                <td><label for="field_author_id">User ID</label></td>
-            </tr>
-            <tr id="author_name">
-                <td class="select"><input type="checkbox" name="field" id="field_author_name" value="author_name" checked="checked" /></td>
-                <td><label for="field_author_name">Username</label></td>
-            </tr>
-            <tr id="author_nickname">
-                <td class="select"><input type="checkbox" name="field" id="field_author_nickname" value="author_nickname" checked="checked" /></td>
-                <td><label for="field_author_nickname">Display name</label></td>
-            </tr>
-            <tr id="author_created_on_date">
-                <td class="select"><input type="checkbox" name="field" id="field_author_created_on_date" value="author_created_on_date" checked="checked" /></td>
-                <td><label for="field_author_created_on_date">Created on (date)</label></td>
-            </tr>
-            <tr id="author_created_on_time">
-                <td class="select"><input type="checkbox" name="field" id="field_author_created_on_time" value="author_created_on_time" /></td>
-                <td><label for="field_author_created_on_time">Created on (time)</label></td>
-            </tr>
-            <tr id="author_email">
-                <td class="select"><input type="checkbox" name="field" id="field_author_email" value="author_email" checked="checked" /></td>
-                <td><label for="field_author_email">Email</label></td>
-            </tr>
-            <tr id="author_url">
-                <td class="select"><input type="checkbox" name="field" id="field_author_url" value="author_url" checked="checked" /></td>
-                <td><label for="field_author_url">Website URL</label></td>
-            </tr>
-            <tr id="author_userpic_asset_id">
-                <td class="select"><input type="checkbox" name="field" id="field_author_userpic_asset_id" value="author_userpic_asset_id" checked="checked" /></td>
-                <td><label for="field_author_userpic_asset_id">Userpic URL</label></td>
-            </tr>
-            <tr id="author_status">
-                <td class="select"><input type="checkbox" name="field" id="field_author_status" value="author_status" /></td>
-                <td><label for="field_author_status">Status</label></td>
-            </tr>
-            <tr id="author_role">
-                <td class="select"><input type="checkbox" name="field" id="field_author_role" value="author_role" /></td>
-                <td><label for="field_author_role">Role and Blog Association</label></td>
-            </tr>
-<mt:Loop name="cf_loop">
-            <tr id="customfield_<mt:Var name="basename">">
-                <td class="select">
-                    <input type="checkbox" name="field" id="field_customfield_<mt:Var name="basename">" value="customfield_<mt:Var name="basename">" checked="checked" />
-                </td>
-                <td>
-                    <label for="field_customfield_<mt:Var name="basename">">
-                        <mt:Var name="name"><mt:If name="description"> (<mt:Var name="description">)</mt:If>
-                    </label>
-                </td>
-            </tr>
-</mt:Loop>
+            <thead>
+                <tr class="nodrag nodrop">
+                    <th class="select">Export</th>
+                    <th>Field name</th>
+                </tr>
+                <tr id="author_id" class="nodrag nodrop">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_id" value="author_id" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_id">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_id">User ID</label></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="author_name">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_name" value="author_name" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_name">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_name">Username</label></td>
+                </tr>
+                <tr id="author_nickname">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_nickname" value="author_nickname" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_nickname">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_nickname">Display name</label></td>
+                </tr>
+                <tr id="author_created_on_date">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_created_on_date" value="author_created_on_date" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_created_on_date">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_created_on_date">Created on (date)</label></td>
+                </tr>
+                <tr id="author_created_on_time">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_created_on_time" value="author_created_on_time" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_created_on_time">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_created_on_time">Created on (time)</label></td>
+                </tr>
+                <tr id="author_email">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_email" value="author_email" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_email">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_email">Email</label></td>
+                </tr>
+                <tr id="author_url">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_url" value="author_url" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_url">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_url">Website URL</label></td>
+                </tr>
+                <tr id="author_userpic_asset_id">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_userpic_asset_id" value="author_userpic_asset_id" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_userpic_asset_id">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_userpic_asset_id">Userpic URL</label></td>
+                </tr>
+                <tr id="author_status">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_status" value="author_status" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_status">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_status">Status</label></td>
+                </tr>
+                <tr id="author_role">
+                    <td class="select"><input type="checkbox" name="field" id="field_author_role" value="author_role" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_role">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td><label for="field_author_role">Role and Blog Association</label></td>
+                </tr>
+            <mt:AuthorCustomFields>
+                <mt:SetVarBlock name="cf_value">customfield_<mt:CustomFieldBasename></mt:SetVarBlock>
+                <tr id="<mt:Var name="cf_value">">
+                    <td class="select">
+                        <input type="checkbox" name="field" id="field_<mt:Var name="cf_value">" 
+                            value="<mt:Var name="cf_value">" 
+                            <mt:Loop name="saved_fields"><mt:If name="saved" eq="$cf_value">checked="checked"</mt:If></mt:Loop> />
+                    </td>
+                    <td>
+                        <label for="field_<mt:Var name="cf_value">">
+                            <mt:CustomFieldName><mt:If tag="CustomFieldDescription"> (<mt:CustomFieldDescription>)</mt:If>
+                        </label>
+                    </td>
+                </tr>
+            </mt:AuthorCustomFields>
+            <mt:Loop name="dg_loop">
+                <mt:SetVarBlock name="dg_value">customfield_<mt:Var name="basename"></mt:SetVarBlock>
+                <tr id="<mt:Var name="dg_value">">
+                    <td class="select">
+                        <input type="checkbox" name="field" id="field_<mt:Var name="dg_value">" 
+                            value="<mt:Var name="dg_value">"
+                            <mt:Loop name="saved_fields"><mt:If name="saved" eq="$dg_value">checked="checked"</mt:If></mt:Loop> />
+                    </td>
+                    <td>
+                        <label for="field_customfield_<mt:Var name="basename">">
+                            <mt:Var name="name"><mt:If name="description"> (<mt:Var name="description">)</mt:If>
+                        </label>
+                    </td>
+                </tr>
+            </mt:Loop>
+            </tbody>
         </table>
     </div>
 

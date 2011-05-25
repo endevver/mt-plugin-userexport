@@ -30,3 +30,23 @@ page_actions:
             permission: administer
             dialog:     eud
 
+settings:
+    status:
+        scope: system
+        default: '1'
+    roles:
+        scope: system
+        default: 'all'
+    blogs:
+        scope: system
+        default: 'all'
+    authmethod:
+        scope: system
+    author_cf:
+        scope: system
+        default: 'none selected'
+    author_cf_filter:
+        scope: system
+        default: 'include'
+    selected_sorted_fields:
+        scope: system

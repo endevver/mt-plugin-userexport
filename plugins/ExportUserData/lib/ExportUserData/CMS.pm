@@ -15,6 +15,16 @@ sub start {
     my $plugin = MT->component('exportuserdata');
     my $param = {};
     
+    # Load the options the user previously used when exporting.
+    $param->{status} = $plugin->get_config_value('status');
+    $param->{authmethod} = $plugin->get_config_value('authmethod');
+    $param->{author_cf_filter} = $plugin->get_config_value('author_cf_filter');
+    # The multi-select options can have a comma-separated list of options. 
+    # Build those into a loop to be used to determine what has been saved.
+    $param->{saved_roles} = _build_saved_loop( $plugin->get_config_value('roles') );
+    $param->{saved_blogs} = _build_saved_loop( $plugin->get_config_value('blogs') );
+    $param->{saved_author_cf} = _build_saved_loop( $plugin->get_config_value('author_cf') );
+    
     # First, the user can create a simple filter to whittle down the results.
     # The blog and status filters don't need any help to be created; only the Roles do.
     use MT::Role;
@@ -30,12 +40,26 @@ sub start {
     return $app->build_page( $tmpl, $param );
 }
 
+# The saved options (blogs, roles, author custom fields) are turned into a 
+# an array of values that an mt:Loop can cycle through to look for matches.
+sub _build_saved_loop {
+    my ($saved_values) = @_;
+    my @saved = split( ',', $saved_values );
+    my @loop;
+
+    foreach my $value (@saved) {
+        push @loop, { saved => $value };
+    }
+
+    return \@loop;
+}
+
 sub sort {
     my $app = shift;
     my $q = $app->param;
     my $plugin = MT->component('exportuserdata');
     my $param = {};
-    
+
     # Grab the values from the filter form so that we have them ready to use.
     my @blogs = $q->param('blogs');
     my @roles = $q->param('roles');
@@ -43,6 +67,14 @@ sub sort {
     $param->{author_cf_filter} = $q->param('author_cf_filter');
     $param->{authmethod} = $q->param('authmethod');
     $param->{status} = $q->param('status');
+
+    # Save the field options previously set
+    $plugin->set_config_value( 'status',           $q->param('status') );
+    $plugin->set_config_value( 'roles',            join(',', @roles) );
+    $plugin->set_config_value( 'blogs',            join(',', @blogs) );
+    $plugin->set_config_value( 'authmethod',       $q->param('authmethod') );
+    $plugin->set_config_value( 'author_cf',        join(',', @author_cfs) );
+    $plugin->set_config_value( 'author_cf_filter', $q->param('author_cf_filter') );
 
     # If "all" was selected from the blog or role selector, trash any other
     # option that may have been selected.
@@ -59,37 +91,27 @@ sub sort {
     else {
         $param->{roles} = join(',', @roles);
     }
-    
-    # Grab the author custom fields that were selected for the filter.
+
+    # Pass along the author custom fields that were selected for the filter.
     $param->{author_cfs} = join(',', @author_cfs);
-    
-    # We need to create the custom field pieces ourself, because MT's custom
-    # field tags don't make the basename available.
-    my @fields = MT->model('field')->load({ obj_type => 'author', })
-        or die 'No authors could be found.';
-    my @cf_loop;
-    foreach my $field (@fields) {
-        push @cf_loop, { 
-            basename    => $field->basename,
-            name        => $field->name,
-            description => $field->description,
-        };
-    }
 
     # Include the Download Genie stats options, if DG is installed.
+    my @dg_loop;
     if ( MT->component('downloadgenie') ) {
-        push @cf_loop, {
+        push @dg_loop, {
             basename => 'dg_total',
             name     => 'Total number of files downloaded',
         };
-        push @cf_loop, {
+        push @dg_loop, {
             basename => 'dg_files',
             name     => 'Downloaded file name, date and time',
         };
     }
+    $param->{dg_loop} = \@dg_loop;
     
-    $param->{cf_loop} = \@cf_loop;
-
+    # Load the previously-saved field selection and order
+    $param->{saved_fields} = _build_saved_loop( $plugin->get_config_value('selected_sorted_fields') );
+    
     my $tmpl = $plugin->load_tmpl('sort-fields.mtml');
     return $app->build_page( $tmpl, $param );
 }
@@ -107,10 +129,10 @@ sub export {
     my @author_cfs = split( /,/, $q->param('author_cfs') );
     my $author_cf_filter = $q->param('author_cf_filter');
     my @selected_fields  = $q->param('field');
-
+    
     # Fields are collected, but they are out of order. use the field-order to
     # resort them. But first, clean up field-order.
-    my @sorted_fields = split(/\&?user-fields\[\]\=/, $q->param('field-order'));
+    my @sorted_fields = split(/\&?(user-fields)?\[\]\=/, $q->param('field-order'));
     # This is the list of sorted, selected fields to export
     my @fields; 
     foreach my $field (@sorted_fields) {
@@ -124,6 +146,11 @@ sub export {
     #MT::log("Selected: @selected_fields");
     #MT::log("Sorted: @sorted_fields");
     #MT::log("And the insersection of sorted and selected: @fields");
+    
+    # Save the field options previously set
+    $plugin->set_config_value( 'selected_sorted_fields', join(',', @fields) );
+
+    
 
     # Create the header row
     my @fields_copy = @fields;
@@ -154,6 +181,10 @@ sub export {
         # have no data saved to the specified field then just move on to the 
         # next author.
         foreach my $author_cf_basename (@author_cfs) {
+            # "none selected" is the value used when the user has selected no
+            # fields to filter on. We want to ignore this, of course.
+            next if $author_cf_basename eq 'none selected';
+
             my $cf = 'field.' . $author_cf_basename;
 
             # Load the custom field definiton so that we can use the field

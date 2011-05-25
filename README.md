@@ -74,6 +74,9 @@ exported data here.
 The resulting comma-separated file can be imported and analyzed with Numbers
 or Excel or other spreadsheet application!
 
+Notice that the options chosen to create the exported data is saved, so the
+next time you need to export your preferences are re-used!
+
 # Acknowledgements
 
 This plugin was commissioned by Endevver to Dan Wolfgang of uiNNOVATIONS.

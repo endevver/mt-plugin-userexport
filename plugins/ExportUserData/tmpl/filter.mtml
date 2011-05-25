@@ -36,19 +36,19 @@
         <div class="data">
             <p>Select the user&rsquo;s status.</p>
             <select name="status">
-                <option value="1" selected="selected">Enabled</option>
-                <option value="2">Disabled</option>
-                <option value="3">Pending</option>
-                <option value="">All</option>
+                <option value="1" <mt:If name="status" eq="1">selected="selected"</mt:If>>Enabled</option>
+                <option value="2" <mt:If name="status" eq="2">selected="selected"</mt:If>>Disabled</option>
+                <option value="3" <mt:If name="status" eq="3">selected="selected"</mt:If>>Pending</option>
+                <option value="" <mt:If name="status" eq="">selected="selected"</mt:If>>All</option>
             </select>
         </div>
 
         <div class="data">
             <p>Select the user&rsquo;s role.</p>
             <select name="roles" multiple="multiple" class="multiple">
-                <option value="all" selected="selected">All</option>
+                <option value="all" <mt:Loop name="saved_roles"><mt:If name="saved" eq="all">selected="selected"</mt:If></mt:Loop>>All</option>
             <mt:Loop name="role_loop">
-                <option value="<mt:Var name="role_id">"><mt:Var name="role_name"></option>
+                <option value="<mt:Var name="role_id">" <mt:Loop name="saved_roles"><mt:If name="saved" eq="$role_id">selected="selected"</mt:If></mt:Loop>><mt:Var name="role_name"></option>
             </mt:Loop>
             </select>
         </div>
@@ -56,17 +56,21 @@
         <div class="data">
             <p>Select the blog(s) to export from.</p>
             <select name="blogs" multiple="multiple" class="multiple">
-                <option value="all" selected="selected">All</option>
+                <option value="all" <mt:Loop name="saved_blogs"><mt:If name="saved" eq="all">selected="selected"</mt:If></mt:Loop>>All</option>
             <mt:Blogs>
-                <option value="<mt:BlogID>"><mt:BlogName></option>
+                <mt:BlogID setvar="blogid">
+                <option value="<mt:BlogID>" <mt:Loop name="saved_blogs"><mt:If name="saved" eq="$blogid">selected="selected"</mt:If></mt:Loop>><mt:BlogName></option>
             </mt:Blogs>
             </select>
         </div>
 
         <div class="data">
-            <p><input type="checkbox" name="authmethod" id="authmethod" value="1" style="display: block; float: left; margin: 0 5px 10px 0;" /> <label for="authmethod">Include users who authenticated with MT native in addition to other methods, such as OpenID, Typepad, and Facebook.</label></p>
+            <p>
+                <input type="checkbox" name="authmethod" id="authmethod" value="1" <mt:if name="authmethod" eq="1">checked="checked"</mt:if> style="display: block; float: left; margin: 0 5px 10px 0;" />
+                <label for="authmethod">Include users who authenticated with MT native in addition to other methods, such as OpenID, Typepad, and Facebook.</label>
+            </p>
         </div>
-        
+
         <div class="actions-bar">
             <div class="actions-bar-inner pkg actions">
                 <button
@@ -90,18 +94,19 @@
                 Select one or more custom fields below to filter users on.
             </p>
             <select name="author_cf" multiple="multiple" class="full-height">
+                <option value="none selected" <mt:Loop name="saved_author_cf"><mt:If name="saved" eq="none selected">selected="selected"</mt:if></mt:Loop>>&lt;No fields selected&gt;</option>
             <mt:AuthorCustomFields>
-                <option value="<mt:CustomFieldBasename>"><mt:CustomFieldName></option>
+                <option value="<mt:CustomFieldBasename>" <mt:Loop name="saved_author_cf"><mt:If tag="CustomFieldBasename" eq="$saved">selected="selected"</mt:if></mt:Loop>><mt:CustomFieldName></option>
             </mt:AuthorCustomFields>
             </select>
         </div>
-        
+
         <div class="data">
-            <input type="radio" name="author_cf_filter" id="author_cf_filter_included" value="include" checked="checked" />
+            <input type="radio" name="author_cf_filter" id="author_cf_filter_included" value="include" <mt:If name="author_cf_filter" eq="include">checked="checked"</mt:If> />
                 <label for="author_cf_filter_included">
                     Users with matching Custom Field data for the selected field(s) should be exported.
                 </label><br />
-            <input type="radio" name="author_cf_filter" id="author_cf_filter_excluded" value="exclude" />
+            <input type="radio" name="author_cf_filter" id="author_cf_filter_excluded" value="exclude" <mt:If name="author_cf_filter" eq="exclude">checked="checked"</mt:If> />
                 <label for="author_cf_filter_excluded">
                     Users with matching Custom Field data for the selected field(s) should <em>not</em> be exported.
                 </label>
