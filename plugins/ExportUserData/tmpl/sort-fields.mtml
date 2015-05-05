@@ -1,4 +1,4 @@
-<mt:setvarblock name="html_head" append="1">
+<mt:SetVarBlock name="html_head" append="1">
     <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
     <script type="text/javascript" src="<mt:PluginStaticWebPath component="exportuserdata">jquery.tablednd_0_5.js"></script>
     <script type="text/javascript">
@@ -29,7 +29,7 @@
             setTimeout(function(){ closeDialog(); }, 5000 );
         }
 
-        // Resort the table cells so that the selected and ordered fields 
+        // Resort the table cells so that the selected and ordered fields
         // appear first.
         function sortBySavedOrder() {
         <mt:Loop name="saved_fields" sort_by="reverse">
@@ -80,11 +80,11 @@
             margin-top: 30px;
         }
     </style>
-</mt:setvarblock>
+</mt:SetVarBlock>
 
-<mt:setvarblock name="page_title">Export User Data: Fields</mt:setvarblock>
+<mt:SetVarBlock name="page_title">Export User Data: Fields</mt:SetVarBlock>
 
-<mt:include name="dialog/header.tmpl">
+<mt:Include name="dialog/header.tmpl">
 
 <div id="status" style="display: none;">
     <div id="status-inner">
@@ -93,14 +93,14 @@
     </div>
 </div>
 
-<form method="post" enctype="multipart/form-data" action="<mt:var name="script_url">" name="sort">
+<form method="post" enctype="multipart/form-data" action="<mt:Var name="script_url">" name="sort">
     <input type="hidden" name="__mode"      value="eud_export" />
     <input type="hidden" name="status"      value="<mt:Var name="status">" />
     <input type="hidden" name="blogs"       value="<mt:Var name="blogs">" />
     <input type="hidden" name="roles"       value="<mt:Var name="roles">" />
     <input type="hidden" name="authmethod"  value="<mt:Var name="authmethod">" />
     <input type="hidden" name="author_cfs"  value="<mt:Var name="author_cfs">" />
-    <input type="hidden" name="author_cf_filter" 
+    <input type="hidden" name="author_cf_filter"
                                             value="<mt:Var name="author_cf_filter">" />
     <input type="hidden" name="field-order" id="field-order" value="" />
 
@@ -158,8 +158,8 @@
                 <mt:SetVarBlock name="cf_value">customfield_<mt:CustomFieldBasename></mt:SetVarBlock>
                 <tr id="<mt:Var name="cf_value">">
                     <td class="select">
-                        <input type="checkbox" name="field" id="field_<mt:Var name="cf_value">" 
-                            value="<mt:Var name="cf_value">" 
+                        <input type="checkbox" name="field" id="field_<mt:Var name="cf_value">"
+                            value="<mt:Var name="cf_value">"
                             <mt:Loop name="saved_fields"><mt:If name="saved" eq="$cf_value">checked="checked"</mt:If></mt:Loop> />
                     </td>
                     <td>
@@ -173,7 +173,7 @@
                 <mt:SetVarBlock name="dg_value">customfield_<mt:Var name="basename"></mt:SetVarBlock>
                 <tr id="<mt:Var name="dg_value">">
                     <td class="select">
-                        <input type="checkbox" name="field" id="field_<mt:Var name="dg_value">" 
+                        <input type="checkbox" name="field" id="field_<mt:Var name="dg_value">"
                             value="<mt:Var name="dg_value">"
                             <mt:Loop name="saved_fields"><mt:If name="saved" eq="$dg_value">checked="checked"</mt:If></mt:Loop> />
                     </td>
@@ -205,4 +205,4 @@
     </div>
 </form>
 
-<mt:include name="dialog/footer.tmpl">
+<mt:Include name="dialog/footer.tmpl">

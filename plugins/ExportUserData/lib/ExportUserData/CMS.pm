@@ -14,17 +14,17 @@ sub start {
     my $app = shift;
     my $plugin = MT->component('exportuserdata');
     my $param = {};
-    
+
     # Load the options the user previously used when exporting.
     $param->{status} = $plugin->get_config_value('status');
     $param->{authmethod} = $plugin->get_config_value('authmethod');
     $param->{author_cf_filter} = $plugin->get_config_value('author_cf_filter');
-    # The multi-select options can have a comma-separated list of options. 
+    # The multi-select options can have a comma-separated list of options.
     # Build those into a loop to be used to determine what has been saved.
     $param->{saved_roles} = _build_saved_loop( $plugin->get_config_value('roles') );
     $param->{saved_blogs} = _build_saved_loop( $plugin->get_config_value('blogs') );
     $param->{saved_author_cf} = _build_saved_loop( $plugin->get_config_value('author_cf') );
-    
+
     # First, the user can create a simple filter to whittle down the results.
     # The blog and status filters don't need any help to be created; only the Roles do.
     use MT::Role;
@@ -40,7 +40,7 @@ sub start {
     return $app->build_page( $tmpl, $param );
 }
 
-# The saved options (blogs, roles, author custom fields) are turned into a 
+# The saved options (blogs, roles, author custom fields) are turned into a
 # an array of values that an mt:Loop can cycle through to look for matches.
 sub _build_saved_loop {
     my ($saved_values) = @_;
@@ -108,10 +108,10 @@ sub sort {
         };
     }
     $param->{dg_loop} = \@dg_loop;
-    
+
     # Load the previously-saved field selection and order
     $param->{saved_fields} = _build_saved_loop( $plugin->get_config_value('selected_sorted_fields') );
-    
+
     my $tmpl = $plugin->load_tmpl('sort-fields.mtml');
     return $app->build_page( $tmpl, $param );
 }
@@ -129,12 +129,12 @@ sub export {
     my @author_cfs = split( /,/, $q->param('author_cfs') );
     my $author_cf_filter = $q->param('author_cf_filter');
     my @selected_fields  = $q->param('field');
-    
+
     # Fields are collected, but they are out of order. use the field-order to
     # resort them. But first, clean up field-order.
     my @sorted_fields = split(/\&?(user-fields)?\[\]\=/, $q->param('field-order'));
     # This is the list of sorted, selected fields to export
-    my @fields; 
+    my @fields;
     foreach my $field (@sorted_fields) {
         if ($field ne '') {
             if ( grep(/$field/, @selected_fields) ) {
@@ -146,18 +146,18 @@ sub export {
     #MT::log("Selected: @selected_fields");
     #MT::log("Sorted: @sorted_fields");
     #MT::log("And the insersection of sorted and selected: @fields");
-    
+
     # Save the field options previously set
     $plugin->set_config_value( 'selected_sorted_fields', join(',', @fields) );
 
-    
+
 
     # Create the header row
     my @fields_copy = @fields;
     my @header;
     foreach my $field (@fields_copy) {
         # Remove the "customfield_" or "author_" precedent from the field name,
-        # because it isn't important 
+        # because it isn't important
         $field =~ s/^customfield_(.*?)$/$1/;
         $field =~ s/^author_(.*?)$/$1/;
         push @header, $field;
@@ -176,9 +176,9 @@ sub export {
     my $iter = MT->model('author')->load_iter($terms)
         or die 'No authors could be found that meet your search terms.';
     AUTHOR:while ( my $author = $iter->() ) {
-        
-        # Use the author custom field filter to check this author. If they 
-        # have no data saved to the specified field then just move on to the 
+
+        # Use the author custom field filter to check this author. If they
+        # have no data saved to the specified field then just move on to the
         # next author.
         foreach my $author_cf_basename (@author_cfs) {
             # "none selected" is the value used when the user has selected no
@@ -196,7 +196,7 @@ sub export {
 
             if ($author_cf->type eq 'checkbox') {
                 if ($author_cf_filter eq 'exclude') {
-                    # If this field is checked we want to exclude this user 
+                    # If this field is checked we want to exclude this user
                     # from the export.
                     next AUTHOR if ($author->$cf eq '1');
                 }
@@ -206,11 +206,11 @@ sub export {
                     next AUTHOR if ($author->$cf ne '1');
                 }
             }
-            
+
             # This is not a checkbox field.
             else {
                 if ($author_cf_filter eq 'exclude') {
-                    # If this field has a value we want to exclude this user 
+                    # If this field has a value we want to exclude this user
                     # from the export.
                     next AUTHOR if ($author->$cf ne '');
                 }
@@ -337,14 +337,14 @@ sub export {
                                 $dg_stats->asset_id )
                                     or next;
 
-                            my $ts = format_ts( 
-                                MT::App::CMS::LISTING_TIMESTAMP_FORMAT(), 
+                            my $ts = format_ts(
+                                MT::App::CMS::LISTING_TIMESTAMP_FORMAT(),
                                 $dg_stats->created_on, undef,
                                 $app->user ? $app->user->preferred_language : undef
                             );
 
                             # Formatted as "filename.ext: 2011-02-03 12:34:56"
-                            push @asset_stats, 
+                            push @asset_stats,
                                 $asset->label . ': ' . $ts;
                         }
 
@@ -384,14 +384,14 @@ sub export {
                 elsif ($field eq 'author_created_on_date') {
                     # The date/time needs to be easily readable.
                     $ts = $author->created_on;
-                    $val = format_ts( 
+                    $val = format_ts(
                                 "%Y-%m-%d", $ts, undef,
                                 $app->user ? $app->user->preferred_language : undef );
                 }
                 elsif ($field eq 'author_created_on_time') {
                     # The date/time needs to be easily readable.
                     $ts = $author->created_on;
-                    $val = format_ts( 
+                    $val = format_ts(
                                 "%H:%M:%S", $ts, undef,
                                 $app->user ? $app->user->preferred_language : undef );
                 }
@@ -441,7 +441,7 @@ sub export {
                     "Content-Disposition" => "attachment; filename=export.csv" );
                 $app->send_http_header('application/octet-stream');
                 $app->print($data_header); # This is the header row, with the field names
-                $start_header = 'done'; # The header has been sent, so set a 
+                $start_header = 'done'; # The header has been sent, so set a
                                         # variable so that it can't be resent.
             }
             $app->print($data);
@@ -471,7 +471,7 @@ sub _get_blog_ids {
     # populated. But if "All" blogs were selected, we
     # need to laod all blogs so that results will be
     # properly tallied.
-    
+
     unless (@blog_ids) {
         my @blogs = MT->model('blog')->load();
         foreach my $blog (@blogs) {
