@@ -1,10 +1,9 @@
 <mt:SetVarBlock name="html_head" append="1">
-    <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
     <script type="text/javascript" src="<mt:PluginStaticWebPath component="exportuserdata">jquery.tablednd_0_5.js"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
+        jQuery(document).ready(function() {
             // Initialise the table
-            $("#user-fields tbody").tableDnD({
+            jQuery("#user-fields tbody").tableDnD({
                 serializeRegexp: /^.*$/,
                 onDragClass: "drag",
             });
@@ -13,38 +12,43 @@
             sortBySavedOrder();
 
             // Add the stripe effect
-            $("#user-fields tr:odd").addClass('odd');
+            jQuery("#user-fields tr:odd").addClass('odd');
         });
 
         function prep() {
             // Display the status indicator
-            $('#status').css('display', 'block');
-            // tableDnDSerialize() will create a list of the order of the drag-dropped fields
-            $('#field-order').val( $('#user-fields tbody').tableDnDSerialize() );
+            jQuery('#status').css('display', 'block');
+
+            // tableDnDSerialize() will create a list of the order of the
+            // drag-dropped fields
+            jQuery('#field-order').val(
+                jQuery('#user-fields tbody').tableDnDSerialize()
+            );
             document.forms['sort'].submit();
+
             // Disable all of the buttons and checkbox fields.
-            $('button').attr('disabled', 'disabled');
-            $(':input').attr('disabled', 'disabled');
+            jQuery('button').attr('disabled', 'disabled');
+            jQuery(':input').attr('disabled', 'disabled');
+
             // Close this dialog 5 secs later, because it's not needed anymore.
-            setTimeout(function(){ closeDialog(); }, 5000 );
+            setTimeout(function(){ parent.jQuery.fn.mtDialog.close(); }, 5000 );
         }
 
         // Resort the table cells so that the selected and ordered fields
         // appear first.
         function sortBySavedOrder() {
         <mt:Loop name="saved_fields" sort_by="reverse">
-            $('tr#<mt:Var name="saved">').prependTo('table#user-fields tbody');
+            jQuery('tr#<mt:Var name="saved">').prependTo('table#user-fields tbody');
         </mt:Loop>
         }
     </script>
+
     <style type="text/css">
         #fields {
-            height: 345px;
-            overflow: auto;
-            border: 1px solid #cddee7;
+            border: 1px solid #c0c6c9;
         }
         table#user-fields {
-            width: 590px;
+            width: 100%;
             background: #fff;
         }
         tr { background: url(<mt:PluginStaticWebPath component="exportuserdata">drag.png) 11px 6px no-repeat;}
@@ -57,7 +61,7 @@
             width:40px;
             padding-left: 30px;
         }
-        .odd { background-color: #f3f6f9; }
+        .odd { background-color: #fbfbfb; }
         .drag { background-color: #ddd; }
         .nodrag {
             background-image: url(<mt:StaticWebPath>images/locked.gif);
@@ -105,53 +109,86 @@
     <input type="hidden" name="field-order" id="field-order" value="" />
 
     <p>Select the fields to be exported by enabling the "export" checkbox. Drag to reorder fields.
+
+<mt:Ignore>
+    The checkbox input field is the same for each row, just uses a different
+    field name.
+</mt:Ignore>
+<mt:SetVarTemplate name="input_checkbox">
+    <input type="checkbox"
+        name="field"
+        id="field_<mt:Var name="field_name">"
+        value="<mt:Var name="field_name">"
+        <mt:Loop name="saved_fields"><mt:If name="saved" eq="$field_name">checked="checked"</mt:If></mt:Loop> />
+</mt:SetVarTemplate>
+
     <div id="fields">
         <table id="user-fields">
             <thead>
                 <tr class="nodrag nodrop">
                     <th class="select">Export</th>
-                    <th>Field name</th>
+                    <th style="text-align: left;">Field Name</th>
                 </tr>
                 <tr id="author_id" class="nodrag nodrop">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_id" value="author_id" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_id">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_id">
+                    </td>
                     <td><label for="field_author_id">User ID</label></td>
                 </tr>
             </thead>
             <tbody>
                 <tr id="author_name">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_name" value="author_name" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_name">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_name">
+                    </td>
                     <td><label for="field_author_name">Username</label></td>
                 </tr>
                 <tr id="author_nickname">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_nickname" value="author_nickname" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_nickname">checked="checked"</mt:If></mt:Loop> /></td>
-                    <td><label for="field_author_nickname">Display name</label></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_nickname">
+                    </td>
+                    <td><label for="field_author_nickname">Display name (The name displayed when content from this user is published.)</label></td>
                 </tr>
                 <tr id="author_created_on_date">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_created_on_date" value="author_created_on_date" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_created_on_date">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_created_on_date">
+                    </td>
                     <td><label for="field_author_created_on_date">Created on (date)</label></td>
                 </tr>
                 <tr id="author_created_on_time">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_created_on_time" value="author_created_on_time" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_created_on_time">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_created_on_time">
+                    </td>
                     <td><label for="field_author_created_on_time">Created on (time)</label></td>
                 </tr>
                 <tr id="author_email">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_email" value="author_email" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_email">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_email">
+                    </td>
                     <td><label for="field_author_email">Email</label></td>
                 </tr>
                 <tr id="author_url">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_url" value="author_url" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_url">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_url">
+                    </td>
                     <td><label for="field_author_url">Website URL</label></td>
                 </tr>
                 <tr id="author_userpic_asset_id">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_userpic_asset_id" value="author_userpic_asset_id" checked="checked" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_userpic_asset_id">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_userpic_asset_id">
+                    </td>
                     <td><label for="field_author_userpic_asset_id">Userpic URL</label></td>
                 </tr>
                 <tr id="author_status">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_status" value="author_status" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_status">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_status">
+                    </td>
                     <td><label for="field_author_status">Status</label></td>
                 </tr>
                 <tr id="author_role">
-                    <td class="select"><input type="checkbox" name="field" id="field_author_role" value="author_role" <mt:Loop name="saved_fields"><mt:If name="saved" eq="author_role">checked="checked"</mt:If></mt:Loop> /></td>
+                    <td class="select">
+                        <mt:Var name="input_checkbox" field_name="author_role">
+                    </td>
                     <td><label for="field_author_role">Role and Blog Association</label></td>
                 </tr>
             <mt:AuthorCustomFields>
@@ -194,11 +231,10 @@
                 onclick="prep();"
                 type="button"
                 accesskey="s"
-                class="primary-button close">Export</button>
+                class="primary action button">Export</button>
             <button
-                onclick="closeDialog(); return false"
                 type="submit"
-                class="cancel"
+                class="action button mt-close-dialog"
                 accesskey="x"
                 title="Cancel (x)">Cancel</button>
         </div>

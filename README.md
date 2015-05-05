@@ -6,8 +6,10 @@ comma-separated format (.csv) file.
 
 # Prerequisities
 
-* Movable Type 4.x.
-* Config Assistant 2.x
+* Movable Type 5.1+
+* [Config Assistant 2.5.7+](https://github.com/openmelody/mt-plugin-configassistant/releases)
+
+Movable Type 4.x is supported with [version 1.1](https://github.com/endevver/mt-plugin-userexport/releases).
 
 # Installation
 

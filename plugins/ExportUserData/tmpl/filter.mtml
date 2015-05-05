@@ -1,7 +1,7 @@
 <mt:SetVarBlock name="html_head" append="1">
     <style type="text/css">
         .data {
-            margin-bottom: 13px;
+            margin-bottom: 20px;
         }
         select {
             margin-left: 20px;
@@ -14,12 +14,12 @@
             height: 280px;
         }
     </style>
-    <script type="text/javascript" src="<mt:StaticWebPath>/jquery/jquery.js"></script>
+
     <script type="text/javascript">
-    function turnPage() {
-        $('#page-1').hide();
-        $('#page-2').show();
-    }
+        function turnPage() {
+            jQuery('#page-1').hide();
+            jQuery('#page-2').show();
+        }
     </script>
 </mt:SetVarBlock>
 
@@ -79,11 +79,10 @@
                     onclick="turnPage()"
                     type="button"
                     accesskey="s"
-                    class="primary-button close">Filter Custom Fields</button>
+                    class="action primary button">Filter Custom Fields</button>
                 <button
-                    onclick="closeDialog(); return false"
                     type="submit"
-                    class="cancel"
+                    class="action button mt-close-dialog"
                     accesskey="x"
                     title="Cancel (x)">Cancel</button>
             </div>
@@ -120,11 +119,10 @@
                     onclick="document.forms['filter'].submit();"
                     type="button"
                     accesskey="s"
-                    class="primary-button close">Select Fields</button>
+                    class="action primary button">Select Fields</button>
                 <button
-                    onclick="closeDialog(); return false"
                     type="submit"
-                    class="cancel"
+                    class="action button mt-close-dialog"
                     accesskey="x"
                     title="Cancel (x)">Cancel</button>
             </div>
